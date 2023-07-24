@@ -1,7 +1,7 @@
 ## Staking Contract(Unverified)
 The staking contract accepts a certain erc20 token which can be staked and withdrawn at any point in time. Staking rewards is dynamically calculated based on the amount staked and the duration it was staked for. Tentatively, the contract allows for rewards up to 20% of the amount staked which could be adjusted. It should be noted that the staking contract is part of the diamond facet while the Token contract is a standalone contract. 
 
-# Contract is implemented using Diamond standard and deployed on BNB smart chain test. Explore Diamond contract via https://louper.dev/diamond/0x77D34272511965cDDa9E4dba2Fd59D3a1b1B5ada?network=binance_testnet.
+Contract is implemented using Diamond standard and deployed on BNB smart chain test. Explore Diamond contract via https://louper.dev/diamond/0x77D34272511965cDDa9E4dba2Fd59D3a1b1B5ada?network=binance_testnet.
 
 ## Deployment Addresses 
 Deployed on BNB SmartChain testnet https://testnet.bscscan.com/
