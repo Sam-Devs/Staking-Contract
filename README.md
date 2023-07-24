@@ -27,7 +27,9 @@ Deployment to polygon Mumbai, Elastos Testnet and Telos Testnet all returned the
 error: Failed to get EIP 1559 fees.
 ```
 This error implies that these networks do not support the new Ethereum improvement proposal that changes the way gas fees are being 
-calculated. Thus, if the network has no support for EIP 1559, it is imperative to switch network. Encountered unavailability issues claiming Fuji testnet Token;  hence, deployment to Fuji was impossible.
+calculated. Thus, if the network has no support for EIP 1559, it is imperative to switch network. 
+
+Encountered unavailability issues claiming Fuji testnet Token;  hence, deployment to Fuji was impossible.
 ## Installation
 
 - Clone this repo
