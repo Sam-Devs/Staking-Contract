@@ -1,0 +1,16 @@
+[default]
+src = 'contracts'
+out = 'out'
+libs = [
+    'lib'
+]
+ffi=true
+verbosity=5
+
+[rpc_endpoints]
+BNB = "${BNBSC_RPC_URL}"
+
+[profile.polygonscan]
+polygon = { key = "${BNBSC_RPC_URL_API_KEY}" }
+
+# See more config options https://github.com/foundry-rs/foundry/tree/master/config
