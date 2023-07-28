@@ -9,7 +9,19 @@ import "../contracts/facets/OwnershipFacet.sol";
 import "../contracts/Diamond.sol";
 import "contracts/facets/Stake.sol";
 import "contracts/Token.sol";
-import "../lib/openzeppelin-contracts/contracts/token/ERC20/IERC20.sol";
+import "contracts/Vault.sol";
+
+interface DiamondInteract{
+    function initializeVault(address _StakeAddress, address _tokenAddress) external;
+    function stake(uint _amount)external;
+    function Claim(uint _amount)external;
+    function WithdrawStake() external;
+    function ClaimableAmount(address account) external view returns(uint reward);
+    function TotalStaked() external view returns(uint _total);
+    function Distributables() external view returns (uint _distributable);
+    function UpdateTokenAddress(address _newToken) external;
+}
+
 
 contract DiamondDeployer is Script, IDiamondCut {
     //contract types of facets to be deployed
@@ -19,20 +31,22 @@ contract DiamondDeployer is Script, IDiamondCut {
     OwnershipFacet ownerF;
     Stake stake;
     Token token;
+    Vault vault;
 
     function setUp() public {}
 
     function run() public {
         uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
         vm.startBroadcast(deployerPrivateKey);   
+        token = new Token("ERC20Token", "ERC");
+        vault = new Vault();
         dCutFacet = new DiamondCutFacet();
-        diamond = new Diamond(address(0x7a5863fe6A65377A7cd3F2A6d417F489D9DCF353), address(dCutFacet));
+        diamond = new Diamond(address(0xFa027a58eF89d124CA94418CE5403C29Af2D7459), address(dCutFacet), address(token), address(vault));
         dLoupe = new DiamondLoupeFacet();
         ownerF = new OwnershipFacet();
-        token = new Token("ERC20Token", "ERC");
-        stake = new Stake(address(token));
+        stake = new Stake();
 
-         FacetCut[] memory cut = new FacetCut[](3);
+         FacetCut[] memory cut = new FacetCut[](4);
 
         cut[0] = (
             FacetCut({
@@ -60,6 +74,7 @@ contract DiamondDeployer is Script, IDiamondCut {
         //upgrade diamond
         IDiamondCut(address(diamond)).diamondCut(cut, address(0x0), "");
         DiamondLoupeFacet(address(diamond)).facetAddresses();
+         DiamondInteract(address(diamond)).initializeVault(address(stake), address(token));
         vm.stopBroadcast();
         // vm.broadcast();
     }

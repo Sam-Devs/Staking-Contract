@@ -9,8 +9,11 @@ struct StakerDetails{
     bool StakeStatus;
     bool FractionalWithdrawal;
 }
-struct StakeStorage {
-    address TokenAddress;
-    mapping(address => StakerDetails) Details;
+struct Storage {
     uint TotalStaked;
+    uint TotalStakeHolders;
+    mapping(address => StakerDetails) Details;
+    address TokenAddress;
+    address StakeContractAddress;
+    address VaultAddress;
 }

@@ -1,7 +1,46 @@
 ## Staking Contract(Unverified)
-The staking contract accepts a certain erc20 token which can be staked and withdrawn at any point in time. Staking rewards is dynamically calculated based on the amount staked and the duration it was staked for. Tentatively, the contract allows for rewards up to 20% of the amount staked which could be adjusted. It should be noted that the staking contract is part of the diamond facet while the Token contract is a standalone contract. 
+The staking contract is implemented using Diamond standard and deployed on BNB smart chain test. Explore Diamond contract via https://louper.dev/diamond/0x77D34272511965cDDa9E4dba2Fd59D3a1b1B5ada?network=binance_testnet. 
 
-Contract is implemented using Diamond standard and deployed on BNB smart chain test. Explore Diamond contract via https://louper.dev/diamond/0x77D34272511965cDDa9E4dba2Fd59D3a1b1B5ada?network=binance_testnet.
+The staking contract accepts a certain erc20 token which can be staked and withdrawn at any point in time. Staking rewards is dynamically calculated based on the amount staked and the duration it was staked for as well as total stakes and rewards as illustrated below 
+```shell
+    Let:
+- `A` be the amount staked by an individual.
+- `T` be the total amount staked by all stakeholders.
+- `R` be the total reward to be distributed.
+- `t` be the time (in days or any other appropriate unit) that an individual has staked.
+- `Tt` be the total time (in days or any other appropriate unit) of the staking period.
+
+The proportion of time an individual stake was active is given by `t/Tt`.
+
+The proportion of the total reward an individual should receive is then `(A / T) * R`.
+
+The staking reward for an individual stake considering the time staked would be:
+`(A / T) * R * (t / Tt)`.
+
+Here's an example:
+
+Let's say there are three stakeholders with the following stakes and staking times:
+1. Stakeholder 1: Staked 100 tokens for 30 days.
+2. Stakeholder 2: Staked 200 tokens for 60 days.
+3. Stakeholder 3: Staked 50 tokens for 15 days.
+
+The total amount staked by all stakeholders `T` is 350 tokens (100 + 200 + 50).
+
+Now, let's assume the total reward to be distributed `R` is 1000 tokens.
+
+1. Stakeholder 1 reward:
+   `(100 / 350) * 1000 * (30 / 105)` ≈ 85.71 tokens
+
+2. Stakeholder 2 reward:
+   `(200 / 350) * 1000 * (60 / 105)` ≈ 244.44 tokens
+
+3. Stakeholder 3 reward:
+   `(50 / 350) * 1000 * (15 / 105)` ≈ 10.71 tokens
+
+```
+Note: The Diamond contract maintains a single central storage, as such the facet of the diamond are basically implementation contracts i.e. they have no storage.
+any calls made should be made directly to the diamond contract address and the diamond will re-route to respective implementation contract. To make updates (upgrade) to the facets,
+the DiamondCutFacet will be interacted with 
 
 ## Deployment Addresses 
 Deployed on BNB SmartChain testnet https://testnet.bscscan.com/
