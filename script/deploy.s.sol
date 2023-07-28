@@ -41,12 +41,12 @@ contract DiamondDeployer is Script, IDiamondCut {
         token = new Token("ERC20Token", "ERC");
         vault = new Vault();
         dCutFacet = new DiamondCutFacet();
-        diamond = new Diamond(address(0xFa027a58eF89d124CA94418CE5403C29Af2D7459), address(dCutFacet), address(token), address(vault));
+        diamond = new Diamond(0x7a5863fe6A65377A7cd3F2A6d417F489D9DCF353, address(dCutFacet), address(token), address(vault));
         dLoupe = new DiamondLoupeFacet();
         ownerF = new OwnershipFacet();
         stake = new Stake();
 
-         FacetCut[] memory cut = new FacetCut[](4);
+         FacetCut[] memory cut = new FacetCut[](3);
 
         cut[0] = (
             FacetCut({
@@ -74,7 +74,7 @@ contract DiamondDeployer is Script, IDiamondCut {
         //upgrade diamond
         IDiamondCut(address(diamond)).diamondCut(cut, address(0x0), "");
         DiamondLoupeFacet(address(diamond)).facetAddresses();
-         DiamondInteract(address(diamond)).initializeVault(address(stake), address(token));
+        vault.initializeVault(address(diamond), address(token));
         vm.stopBroadcast();
         // vm.broadcast();
     }
