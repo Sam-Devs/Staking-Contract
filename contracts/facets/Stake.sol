@@ -10,6 +10,8 @@ contract Stake {
     function stake(uint _amount)external{
         IToken(ds.TokenAddress).transferFrom(msg.sender, ds.VaultAddress, _amount);
         if(ds.Details[msg.sender].StakeStatus == true){
+        uint accumulatedReward = ClaimableAmount(msg.sender);
+        ds.Details[msg.sender].TokenEarned += accumulatedReward;
         ds.Details[msg.sender].amountStaked += _amount;
         ds.Details[msg.sender].StakeTime = block.timestamp;  
         } 
