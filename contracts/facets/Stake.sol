@@ -91,6 +91,7 @@ contract Stake {
 
     function UpdateTokenAddress(address _newToken) internal {
         require(_newToken != address(0), "Non-zero address");
+        require(ds.TotalStaked == 0, 'stake in progress');
         ds.TokenAddress = _newToken;
     }
 
