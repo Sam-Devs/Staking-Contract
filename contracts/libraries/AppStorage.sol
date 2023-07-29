@@ -16,4 +16,5 @@ struct Storage {
     address TokenAddress;
     address StakeContractAddress;
     address VaultAddress;
+    mapping(address => uint) nonces;
 }

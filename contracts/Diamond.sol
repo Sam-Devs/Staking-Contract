@@ -16,9 +16,11 @@ contract Diamond {
     Storage _s;
     constructor(address _contractOwner, address _diamondCutFacet, address _tokenAddress , address _vaultAddress) payable {
         LibDiamond.setContractOwner(_contractOwner);
+        LibDiamond.setEIP712Data("Stake", "1");
         _s.TokenAddress = _tokenAddress;
         _s.TotalStakeHolders = 0;
         _s.VaultAddress = _vaultAddress;
+        _s.nonces[_contractOwner] = 0;
         // Add the diamondCut external function from the diamondCutFacet
         IDiamondCut.FacetCut[] memory cut = new IDiamondCut.FacetCut[](1);
         bytes4[] memory functionSelectors = new bytes4[](1);

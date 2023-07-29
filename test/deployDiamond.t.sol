@@ -22,6 +22,7 @@ interface DiamondInteract{
     function Distributables() external view returns (uint _distributable);
     function UpdateTokenAddress(address _newToken) external;
     function CompoundStake() external;
+    function executeTokenUpdate(bytes memory signature,address newTokenAddr, uint256 deadline) external;
 }
 
 contract DiamondDeployer is Test, IDiamondCut {
@@ -35,13 +36,17 @@ contract DiamondDeployer is Test, IDiamondCut {
     Vault vault;
 
      function setUp() public {
+        //Forked Sepolia Testnet to test Signature Validity
+        // uint sepolia = vm.createFork("https://eth-sepolia.g.alchemy.com/v2/5ShvcS43c_Wrsfk_jTMZOU0sXXBKaVXP", 3988447);
+        // vm.selectFork(sepolia);
         //deploy facets 
         vm.startPrank(0xFa027a58eF89d124CA94418CE5403C29Af2D7459);
         vm.deal(0xFa027a58eF89d124CA94418CE5403C29Af2D7459, 5 ether); 
         token = new Token("ERC20Token", "ERC");
         vault = new Vault();
+        address vaultAddress = address(vault);
         dCutFacet = new DiamondCutFacet();
-        diamond = new Diamond(address(0xFa027a58eF89d124CA94418CE5403C29Af2D7459), address(dCutFacet), address(token), address(vault));
+        diamond = new Diamond(address(0xFa027a58eF89d124CA94418CE5403C29Af2D7459), address(dCutFacet), address(token), vaultAddress);
         dLoupe = new DiamondLoupeFacet();
         ownerF = new OwnershipFacet();
         stake = new Stake();
@@ -126,8 +131,12 @@ contract DiamondDeployer is Test, IDiamondCut {
         console.log("stake Withdrawn");
         uint caller4thBalance = token.balanceOf(0xFa027a58eF89d124CA94418CE5403C29Af2D7459);
         console.log("Caller balance after withdrawing stake is :", caller4thBalance);
-        //Update Token Address
-        DiamondInteract(address(diamond)).UpdateTokenAddress(address(token));
+        
+        // Tested Digest generated with Sepolia
+        // 0x558685c04fd884b29b1859a1491440049f6dd92b63437b3bc7479aab2244b738
+        // Tested Signature generated with Sepolia
+        // bytes memory sig = hex"ebc148151badd068444cd48618eb536e1009c6369dcaf8bf0d895cc702dbb1c06df3abcbf5f092478f73e68aa68a8c6cda67b5d28d29eee4c35a753ccf843ab61b";
+        // DiamondInteract(address(diamond)).executeTokenUpdate(sig, address(token), block.timestamp + 365 days);
         vm.stopPrank();
     }
 

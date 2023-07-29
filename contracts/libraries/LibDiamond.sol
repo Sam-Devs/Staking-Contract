@@ -6,8 +6,11 @@ pragma solidity ^0.8.0;
 * EIP-2535 Diamonds: https://eips.ethereum.org/EIPS/eip-2535
 /******************************************************************************/
 import {IDiamondCut} from "../interfaces/IDiamondCut.sol";
+import "lib/openzeppelin-contracts/contracts/utils/ShortStrings.sol";
+import "lib/openzeppelin-contracts/contracts/utils/cryptography/ECDSA.sol";
 
 library LibDiamond {
+    using ShortStrings for *;
     error InValidFacetCutAction();
     error NotDiamondOwner();
     error NoSelectorsInFacet();
@@ -22,6 +25,8 @@ library LibDiamond {
     error EmptyCalldata();
     error InitCallFailed();
     bytes32 constant DIAMOND_STORAGE_POSITION = keccak256("diamond.standard.diamond.storage");
+    bytes32 private constant _TYPE_HASH =
+        keccak256("EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)");
 
     struct FacetAddressAndPosition {
         address facetAddress;
@@ -46,6 +51,15 @@ library LibDiamond {
         mapping(bytes4 => bool) supportedInterfaces;
         // owner of the contract
         address contractOwner;
+        bytes32 _cachedDomainSeparator;
+        uint256 _cachedChainId;
+        address _cachedThis;
+        bytes32 _hashedName;
+        bytes32 _hashedVersion;
+        ShortString _name;
+        ShortString _version;
+        string _nameFallback;
+        string _versionFallback;
     }
 
     function diamondStorage() internal pure returns (DiamondStorage storage ds) {
@@ -64,6 +78,82 @@ library LibDiamond {
         emit OwnershipTransferred(previousOwner, _newOwner);
     }
 
+    function setEIP712Data(string memory name, string memory version)internal {
+        DiamondStorage storage ds = diamondStorage();
+        ds._name = name.toShortStringWithFallback(ds._nameFallback);
+        ds._version = version.toShortStringWithFallback(ds._versionFallback);
+        ds._hashedName = keccak256(bytes(name));
+        ds._hashedVersion = keccak256(bytes(version));
+        ds._cachedChainId = block.chainid;
+        ds._cachedDomainSeparator = _buildDomainSeparator();
+        ds._cachedThis = address(this);
+    }
+
+     /**
+     * @dev Returns the domain separator for the current chain.
+     */
+    function _domainSeparatorV4() internal view returns (bytes32) {
+        DiamondStorage storage ds = diamondStorage();
+        if (address(this) == ds._cachedThis && block.chainid == ds._cachedChainId) {
+            return ds._cachedDomainSeparator;
+        } else {
+            return _buildDomainSeparator();
+        }
+    }
+     function _buildDomainSeparator() private view returns (bytes32) {
+        DiamondStorage storage ds = diamondStorage();
+        return keccak256(abi.encode(_TYPE_HASH, ds._hashedName, ds._hashedVersion, block.chainid, address(this)));
+    }
+
+    /**
+     * @dev Given an already https://eips.ethereum.org/EIPS/eip-712#definition-of-hashstruct[hashed struct], this
+     * function returns the hash of the fully encoded EIP712 message for this domain.
+     *
+     * This hash can be used together with {ECDSA-recover} to obtain the signer of a message. For example:
+     *
+     * ```solidity
+     * bytes32 digest = _hashTypedDataV4(keccak256(abi.encode(
+     *     keccak256("Mail(address to,string contents)"),
+     *     mailTo,
+     *     keccak256(bytes(mailContents))
+     * )));
+     * address signer = ECDSA.recover(digest, signature);
+     * ```
+     */
+    function _hashTypedDataV4(bytes32 structHash) internal view returns (bytes32) {
+        return ECDSA.toTypedDataHash(_domainSeparatorV4(), structHash);
+    }
+
+     /**
+     * @dev See {EIP-5267}.
+     *
+     * _Available since v4.9._
+     */
+    function eip712Domain()
+        public
+        view
+        returns (
+            bytes1 fields,
+            string memory name,
+            string memory version,
+            uint256 chainId,
+            address verifyingContract,
+            bytes32 salt,
+            uint256[] memory extensions
+        )
+    {
+         DiamondStorage storage ds = diamondStorage();
+        return (
+            hex"0f", // 01111
+            ds._name.toStringWithFallback(ds._nameFallback),
+            ds._version.toStringWithFallback(ds._versionFallback),
+            block.chainid,
+            address(this),
+            bytes32(0),
+            new uint256[](0)
+        );
+    }
+    
     function contractOwner() internal view returns (address contractOwner_) {
         contractOwner_ = diamondStorage().contractOwner;
     }

@@ -3,10 +3,11 @@ pragma solidity ^0.8.0;
 
 import "../interfaces/IToken.sol";
 import {Storage, StakerDetails} from "../libraries/AppStorage.sol";
-import { LibDiamond } from "../libraries/LibDiamond.sol";
+import { LibDiamond, ECDSA } from "../libraries/LibDiamond.sol";
 
 contract Stake {
         Storage ds;
+
     function stake(uint _amount)external{
         IToken(ds.TokenAddress).transferFrom(msg.sender, ds.VaultAddress, _amount);
         if(ds.Details[msg.sender].StakeStatus == true){
@@ -88,10 +89,26 @@ contract Stake {
         _distributable = IToken(ds.TokenAddress).balanceOf(ds.VaultAddress) - ds.TotalStaked;
     }
 
-    function UpdateTokenAddress(address _newToken) external {
+    function UpdateTokenAddress(address _newToken) internal {
         require(_newToken != address(0), "Non-zero address");
-        require(msg.sender == LibDiamond.contractOwner(), "not authorized");
         ds.TokenAddress = _newToken;
+    }
+
+    function executeTokenUpdate(bytes memory signature,address newTokenAddr, uint256 deadline) external {
+            bytes32 digest = LibDiamond._hashTypedDataV4(keccak256(abi.encode(
+            keccak256("UpdateTokenAddress(address owner,address newTokenAddr,uint256 nonce,uint256 deadline)"),
+            LibDiamond.contractOwner(),
+            newTokenAddr,
+            ds.nonces[LibDiamond.contractOwner()],
+            deadline
+        )));
+        address signer = ECDSA.recover(digest, signature);
+        require(signer == LibDiamond.contractOwner(), "UpdateToken: invalid signature");
+        require(signer != address(0), "ECDSA: invalid signature");
+
+        require(block.timestamp < deadline, "UpdateTokenAddress: signed transaction expired");
+        ds.nonces[LibDiamond.contractOwner()]++;
+        UpdateTokenAddress(newTokenAddr);
     }
 
     //Compound stake feature Logic 
@@ -105,4 +122,5 @@ contract Stake {
     //     ds.Details[msg.sender].amountStaked += initialReward;
     //     ds.Details[msg.sender].StakeTime = block.timestamp;
     // }
+
 }
