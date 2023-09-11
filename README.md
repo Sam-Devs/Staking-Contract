@@ -3,12 +3,12 @@ The Staking Contract is implemented using Diamond standard and deployed on BNB s
 
 The staking contract accepts a certain erc20 token which can be staked and withdrawn at any point in time. Staking rewards is dynamically calculated based on the amount staked and the duration it was staked for as well as total stakes and rewards as illustrated below 
 ```shell
-    Let:
-- `A` be the amount staked by an individual.
-- `T` be the total amount staked by all stakeholders.
-- `R` be the total reward to be distributed.
-- `t` be the time (in days or any other appropriate unit) that an individual has staked.
-- `Tt` be the total time (in days or any other appropriate unit) of the staking period.
+Let:
+    - `A` be the amount staked by an individual.
+    - `T` be the total amount staked by all stakeholders.
+    - `R` be the total reward to be distributed.
+    - `t` be the time (in days or any other appropriate unit) that an individual has staked.
+    - `Tt` be the total time (in days or any other appropriate unit) of the staking period.
 
 The proportion of time an individual stake was active is given by `t/Tt`.
 
